@@ -46,6 +46,7 @@ namespace detail {
 static std::string s_backend;
 
 struct _interpreter {
+    PyObject* pymod;
     PyObject* s_python_function_arrow;
     PyObject *s_python_function_show;
     PyObject *s_python_function_close;
@@ -212,9 +213,36 @@ private:
 
 
 
-        PyObject* pymod = PyImport_Import(pyplotname);
+        pymod = PyImport_Import(pyplotname);
         Py_DECREF(pyplotname);
         if (!pymod) { throw std::runtime_error("Error loading module matplotlib.pyplot!"); }
+
+        PyObject * mpl_toolkitsmod; 
+        PyObject * axis3dmod;
+        if (!mpl_toolkitsmod) {
+            PyObject* mpl_toolkits = PyString_FromString("mpl_toolkits");
+            PyObject* axis3d = PyString_FromString("mpl_toolkits.mplot3d");
+            if (!mpl_toolkits || !axis3d) { throw std::runtime_error("couldnt create string"); }
+
+            mpl_toolkitsmod = PyImport_Import(mpl_toolkits);
+            Py_DECREF(mpl_toolkits);
+            if (!mpl_toolkitsmod) { throw std::runtime_error("Error loading module mpl_toolkits!"); }
+
+            axis3dmod = PyImport_Import(axis3d);
+            Py_DECREF(axis3d);
+            if (!axis3dmod) { throw std::runtime_error("Error loading module mpl_toolkits.mplot3d!"); }
+        }
+
+
+
+
+
+
+
+
+
+
+
 
         s_python_colormap = PyImport_Import(cmname);
         Py_DECREF(cmname);
@@ -329,6 +357,24 @@ inline bool annotate(std::string annotation, double x, double y)
     if(res) Py_DECREF(res);
 
     return res;
+}
+
+PyObject * chart(int place)
+{
+    PyObject * drawObject = PyObject_GetAttrString(detail::_interpreter::get().pymod, "subplot");
+    PyObject * args = PyTuple_New(1);
+    PyObject * kwargs = PyDict_New();
+    PyTuple_SetItem(args, 0, PyLong_FromLong(place));
+    PyDict_SetItemString(kwargs, "projection", PyUnicode_FromString("3d"));
+    PyObject * thePlot = PyObject_Call(drawObject, args, kwargs);
+    return thePlot;
+}
+
+inline void Clear3DChart(PyObject * ax)
+{
+    PyObject * eraser = PyObject_GetAttrString(ax, "cla");
+    PyObject * args = PyTuple_New(0);
+    PyObject_CallObject(eraser, args);
 }
 
 namespace detail {
@@ -473,6 +519,31 @@ bool plot(const std::vector<Numeric> &x, const std::vector<Numeric> &y, const st
 // TODO - it should be possible to make this work by implementing
 // a non-numpy alternative for `detail::get_2darray()`.
 #ifndef WITHOUT_NUMPY
+template <typename Numeric>
+void surface3D(PyObject * ax,
+                  const std::vector<::std::vector<Numeric>> &x,
+                  const std::vector<::std::vector<Numeric>> &y,
+                  const std::vector<::std::vector<Numeric>> &z,
+                  std::string color,
+                  double linewidth)
+{
+    PyObject * X = detail::get_2darray(x);
+    PyObject * Y = detail::get_2darray(y);
+    PyObject * Z = detail::get_2darray(z);
+
+    PyObject * args = PyTuple_New(3);
+    PyObject * kwargs = PyDict_New();
+    PyTuple_SetItem(args, 0, X);
+    PyTuple_SetItem(args, 1, Y);
+    PyTuple_SetItem(args, 2, Z);
+    PyDict_SetItemString(kwargs, "color", PyUnicode_FromString(color.c_str()));
+    PyDict_SetItemString(kwargs, "linewidth", PyLong_FromLong(linewidth));
+
+
+    PyObject * thePlot = PyObject_GetAttrString(ax, "plot_surface");
+    PyObject_Call(thePlot, args, kwargs);
+}
+
 template <typename Numeric>
 void plot_surface(const std::vector<::std::vector<Numeric>> &x,
                   const std::vector<::std::vector<Numeric>> &y,
