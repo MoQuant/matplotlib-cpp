@@ -370,6 +370,16 @@ PyObject * chart(int place)
     return thePlot;
 }
 
+PyObject * chart2D(int place)
+{
+    PyObject * drawObject = PyObject_GetAttrString(detail::_interpreter::get().pymod, "subplot");
+    PyObject * args = PyTuple_New(1);
+    PyObject * kwargs = PyDict_New();
+    PyTuple_SetItem(args, 0, PyLong_FromLong(place));
+    PyObject * thePlot = PyObject_Call(drawObject, args, kwargs);
+    return thePlot;
+}
+
 inline void Clear3DChart(PyObject * ax)
 {
     PyObject * eraser = PyObject_GetAttrString(ax, "cla");
@@ -510,6 +520,64 @@ bool plot(const std::vector<Numeric> &x, const std::vector<Numeric> &y, const st
     }
 
     PyObject* res = PyObject_Call(detail::_interpreter::get().s_python_function_plot, args, kwargs);
+
+    Py_DECREF(args);
+    Py_DECREF(kwargs);
+    if(res) Py_DECREF(res);
+
+    return res;
+}
+
+template<typename Numeric>
+bool plot2D(PyObject * ax, const std::vector<Numeric> &x, const std::vector<Numeric> &y, std::string color)
+{
+    assert(x.size() == y.size());
+
+    // using numpy arrays
+    PyObject* xarray = detail::get_array(x);
+    PyObject* yarray = detail::get_array(y);
+
+    // construct positional args
+    PyObject* args = PyTuple_New(2);
+    PyTuple_SetItem(args, 0, xarray);
+    PyTuple_SetItem(args, 1, yarray);
+
+    // construct keyword args
+    PyObject* kwargs = PyDict_New();
+    PyDict_SetItemString(kwargs, "color", PyUnicode_FromString(color.c_str()));
+
+    PyObject * theplot = PyObject_GetAttrString(ax, "plot");
+
+    PyObject* res = PyObject_Call(theplot, args, kwargs);
+
+    Py_DECREF(args);
+    Py_DECREF(kwargs);
+    if(res) Py_DECREF(res);
+
+    return res;
+}
+
+template<typename Numeric>
+bool scatter2D(PyObject * ax, const std::vector<Numeric> &x, const std::vector<Numeric> &y, std::string color)
+{
+    assert(x.size() == y.size());
+
+    // using numpy arrays
+    PyObject* xarray = detail::get_array(x);
+    PyObject* yarray = detail::get_array(y);
+
+    // construct positional args
+    PyObject* args = PyTuple_New(2);
+    PyTuple_SetItem(args, 0, xarray);
+    PyTuple_SetItem(args, 1, yarray);
+
+    // construct keyword args
+    PyObject* kwargs = PyDict_New();
+    PyDict_SetItemString(kwargs, "color", PyUnicode_FromString(color.c_str()));
+
+    PyObject * theplot = PyObject_GetAttrString(ax, "scatter");
+
+    PyObject* res = PyObject_Call(theplot, args, kwargs);
 
     Py_DECREF(args);
     Py_DECREF(kwargs);
