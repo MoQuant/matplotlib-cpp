@@ -102,17 +102,24 @@ int main()
 
     std::vector<std::vector<double>> coef = MMULT(INVERSE(X), Y);
 
-    std::vector<double> Fy;
-    for(int i = 0; i < x.size(); ++i){
-        double total = 0;
+    std::vector<double> Fx, Fy;
+    int steps = 50;
+    double x0 = 1;
+    double x1 = 10;
+    double dx = (x1 - x0)/((double) steps - 1);
+
+    for(int i = 0; i < steps; ++i){
+        double summation = 0;
+        double uxp = x0 + i*dx;
         for(int j = 0; j < coef.size(); ++j){
-            total += pow(x[i], j)*coef[j][0];
+            summation += coef[j][0]*pow(uxp, j);
         }
-        Fy.push_back(total);
+        Fx.push_back(uxp);
+        Fy.push_back(summation);
     }
 
     plt::scatter2D(ax, x, y, "red");
-    plt::plot2D(ax, x, Fy, "blue");
+    plt::plot2D(ax, Fx, Fy, "blue");
 
     plt::show();
 
