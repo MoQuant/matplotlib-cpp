@@ -615,6 +615,31 @@ void surface3D(PyObject * ax,
 }
 
 template <typename Numeric>
+void surface3DMap(PyObject * ax,
+                  const std::vector<::std::vector<Numeric>> &x,
+                  const std::vector<::std::vector<Numeric>> &y,
+                  const std::vector<::std::vector<Numeric>> &z,
+                  std::string color,
+                  double linewidth)
+{
+    PyObject * X = detail::get_2darray(x);
+    PyObject * Y = detail::get_2darray(y);
+    PyObject * Z = detail::get_2darray(z);
+
+    PyObject * args = PyTuple_New(3);
+    PyObject * kwargs = PyDict_New();
+    PyTuple_SetItem(args, 0, X);
+    PyTuple_SetItem(args, 1, Y);
+    PyTuple_SetItem(args, 2, Z);
+    PyDict_SetItemString(kwargs, "cmap", PyUnicode_FromString(color.c_str()));
+    PyDict_SetItemString(kwargs, "linewidth", PyLong_FromLong(linewidth));
+
+
+    PyObject * thePlot = PyObject_GetAttrString(ax, "plot_surface");
+    PyObject_Call(thePlot, args, kwargs);
+}
+
+template <typename Numeric>
 void plot_surface(const std::vector<::std::vector<Numeric>> &x,
                   const std::vector<::std::vector<Numeric>> &y,
                   const std::vector<::std::vector<Numeric>> &z,
