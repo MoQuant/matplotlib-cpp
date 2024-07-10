@@ -59,7 +59,7 @@ std::vector<std::vector<double>> Jacobian(double x0, double y0){
     double first = std::cos(x0*y0)*y0;
     double second = std::sin(x0*y0)*y0;
     double third = std::cos(x0*y0)*x0;
-    double fourth = std::sin(x0*y0)*y0;
+    double fourth = std::sin(x0*y0)*x0;
     return {{first - second}, {third - fourth}};
 }
 
