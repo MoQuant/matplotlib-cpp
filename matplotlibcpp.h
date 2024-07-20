@@ -387,6 +387,19 @@ inline void Clear3DChart(PyObject * ax)
     PyObject_CallObject(eraser, args);
 }
 
+inline void Chart3DAxesNames(PyObject * ax, std::string x, std::string y, std::string z){
+    PyObject * xaxis = PyObject_GetAttrString(ax, "set_xlabel");
+    PyObject * yaxis = PyObject_GetAttrString(ax, "set_ylabel");
+    PyObject * zaxis = PyObject_GetAttrString(ax, "set_zlabel");
+    PyObject * args = PyTuple_New(1);
+    PyTuple_SetItem(args, 0, PyUnicode_FromString(x.c_str()));
+    PyObject_CallObject(xaxis, args);
+    PyTuple_SetItem(args, 0, PyUnicode_FromString(y.c_str()));
+    PyObject_CallObject(yaxis, args);
+    PyTuple_SetItem(args, 0, PyUnicode_FromString(z.c_str()));
+    PyObject_CallObject(zaxis, args);
+}
+
 namespace detail {
 
 #ifndef WITHOUT_NUMPY
