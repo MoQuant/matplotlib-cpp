@@ -154,6 +154,57 @@ std::vector<std::vector<double>> VolSurface(std::map<std::string, std::vector<st
     return vs;
 }
 
+std::vector<double> linspace(double a, double b, int n){
+    std::vector<double> result;
+    double dx = (b - a)/(n - 1);
+    for(int i = 0; i < n; ++i){
+        result.push_back(a + i*dx);
+    }
+    return result;
+}
+
+int main()
+{
+    std::vector<std::string> tickers = {"MSFT","AAPL","AMZN","IBM","NVDA","GOOGL"};
+    std::vector<PyObject*> bx;
+    for(auto & num : {231, 232, 233, 234, 235, 236}){
+        bx.push_back(plt::chart(num));
+    }
+
+    double rho = -0.9;
+    double r = 0.044;
+
+    for(int k = 0; k < tickers.size(); ++k){
+        std::string ticker = tickers[k];
+        PyObject * ax = bx[k];
+        std::vector<double> close = PullStockData(ticker);
+        double S = stockPrice(close);
+
+        std::map<std::string, double> VOL = Parameters(close);
+
+        std::vector<double> T = linspace(7/365.0, 2.0, 100);
+        std::vector<double> Fr;
+        for(int t = 0; t < T.size(); ++t){
+            Fr.push_back(S*exp(r*T[t]));
+        }
+        
+        std::vector<double> K = linspace(0.5*S, 1.5*S, 100);
+        
+        double beta = 0.3;
+        std::map<std::string, std::vector<std::vector<double>>> grid = GRID(K, Fr, T);
+        std::vector<std::vector<double>> ZVol = VolSurface(grid, VOL["iv"], VOL["sv"], rho, beta);
+
+        plt::PlotTitle(ax, ticker);
+        plt::surface3DMap(ax, grid["Strikes"], grid["Expiry"], ZVol, "jet", 0.8);
+        plt::Chart3DAxesNames(ax, "Strike Price", "Expiry", "Implied Volatility");
+    }
+
+    plt::show();
+
+    return 0;
+}
+
+/* PART ONE
 int main()
 {
     std::string ticker = "MSFT";
@@ -187,3 +238,4 @@ int main()
 
     return 0;
 }
+*/
