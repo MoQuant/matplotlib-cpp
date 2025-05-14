@@ -1,3 +1,56 @@
+# My Version
+
+## Description
+I forked this C++ plotting library and added a feature to animate 3D plots. The original version does not do this in an effecient way as each iteration of the 3D plot prints out a new figure. These are the projects I have done with this amazing library
+
+### 3D Gradient Descent Plotting
+
+#### Description
+In this program I dive deep into the plotters code and move the 3D figure rendering to the interpreter of the namespace in order to call it as a global variable rather than just restricting 3D rendering to a single function
+
+#### Video Link
+[YouTube Video](https://www.youtube.com/watch?v=NOZDyFmWDtw)
+
+#### Preview
+![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/AlterGUI/altergui.png)
+
+### Limit OrderBook Visualization
+
+#### Description
+In this program I stream the level2 orderbook on Bitcoin from Coinbase Pro and I generate an animated 3D chart of the book showcasing orders flowing in and out
+
+#### Video Link
+[YouTube Video](https://youtu.be/h9awfTMfnUI?feature=shared)
+
+#### Preview
+![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/BookViz/bookviz.png)
+
+### Credit Risk Visulaization
+
+#### Description
+In this video I visualize credit spreads between fixed and floating legs and use Newton Ralphson's method to solve for the optimal spread between the two
+
+#### Video Link
+[YouTube Video](https://youtu.be/kuD_NKkQup8?feature=shared)
+
+#### Preview
+![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/CreditRisk/creditrisk.png)
+
+### Geometric Brownian Motion Distributions
+
+#### Description
+In this program I utilize Geometric Brownian Motion to generate a distribution plot between the historical stock price distribution and the forecasted GBM stock price distribution. I utilize threading to compute all of the distribution forecasts at the same time
+
+#### Video Link
+[YouTube Video](https://youtu.be/L13-RjbXMhs?feature=shared)
+
+#### Preview
+![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/Distribution/distribute.png)
+
+
+
+# Original
+
 matplotlib-cpp
 ==============
 
