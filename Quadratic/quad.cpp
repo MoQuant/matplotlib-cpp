@@ -12,14 +12,17 @@
 
 namespace plt = matplotlibcpp;
 
+// Return PI
 double pi(){
     return M_PI;
 }
 
+// Main Equation 
 double FX3D(double x, double y){
     return std::sin(x*y) + std::cos(x*y);
 }
 
+// Matrix Multiplication Function
 std::vector<std::vector<double>> MMULT(std::vector<std::vector<double>> x, std::vector<std::vector<double>> y){
     std::vector<std::vector<double>> z;
     std::vector<double> temp;
@@ -38,10 +41,12 @@ std::vector<std::vector<double>> MMULT(std::vector<std::vector<double>> x, std::
     return z;
 }
 
+// Returns two doubles as a 2D matrix
 std::vector<std::vector<double>> Matrix(double a, double b){
     return {{a}, {b}};
 }
 
+// Transpose Matrix Function
 std::vector<std::vector<double>> TRANSPOSE(std::vector<std::vector<double>> x){
     std::vector<std::vector<double>> y;
     std::vector<double> ty;
@@ -55,6 +60,7 @@ std::vector<std::vector<double>> TRANSPOSE(std::vector<std::vector<double>> x){
     return y;
 }
 
+// Jacobian Vector with First Order Derivatives
 std::vector<std::vector<double>> Jacobian(double x0, double y0){
     double first = std::cos(x0*y0)*y0;
     double second = std::sin(x0*y0)*y0;
@@ -63,6 +69,7 @@ std::vector<std::vector<double>> Jacobian(double x0, double y0){
     return {{first - second}, {third - fourth}};
 }
 
+// Hessian Matrix with Second Order Derivatives
 std::vector<std::vector<double>> Hessian(double x0, double y0){
     double first = -std::sin(x0*y0)*pow(y0, 2) - std::cos(x0*y0)*pow(y0, 2);
     double second = -std::sin(x0*y0)*pow(x0, 2) - std::cos(x0*y0)*pow(x0, 2);
@@ -70,6 +77,7 @@ std::vector<std::vector<double>> Hessian(double x0, double y0){
     return {{first, third},{third, second}};
 }
 
+// Quadratic Approximation Equation centered at a point (x0, y0)
 std::map<std::string, std::vector<std::vector<double>>> QUADRATIC(std::map<std::string, std::vector<std::vector<double>>> EQ, double x0, double y0){
     std::map<std::string, std::vector<std::vector<double>>> QFIN;
     std::vector<std::vector<double>> D2;
@@ -80,14 +88,20 @@ std::map<std::string, std::vector<std::vector<double>>> QUADRATIC(std::map<std::
         ty.clear();
         tz.clear();
         for(int j = 0; j < EQ["x"][0].size(); ++j){
+            // Center point
             D2 = Matrix(EQ["x"][i][j] - x0, EQ["y"][i][j] - y0);
+
+            // Compute components of Quadratic matrix equation
             double atime = FX3D(x0, y0);
             double jtime = MMULT(TRANSPOSE(Jacobian(x0, y0)), D2)[0][0];
             double htime = MMULT(TRANSPOSE(D2), MMULT(Hessian(x0, y0), D2))[0][0];
+
+            // Build x, y, and z rows for 3D Chart
             tx.push_back(EQ["x"][i][j]);
             ty.push_back(EQ["y"][i][j]);
             tz.push_back(atime + jtime + htime);
         }
+        // Store each row for 3D chart
         QFIN["x"].push_back(tx);
         QFIN["y"].push_back(ty);
         QFIN["z"].push_back(tz);
@@ -96,6 +110,7 @@ std::map<std::string, std::vector<std::vector<double>>> QUADRATIC(std::map<std::
     return QFIN;
 }
 
+// Returns a meshgrid of the inputs and generates the equation to be approximated
 std::map<std::string, std::vector<std::vector<double>>> GRID(double a, double b){
     std::map<std::string, std::vector<std::vector<double>>> G;
     int n = 50;
@@ -121,11 +136,16 @@ std::map<std::string, std::vector<std::vector<double>>> GRID(double a, double b)
 
 int main()
 {
+    // Generate 3D plot
     PyObject * ax = plt::chart(111);
 
+    // Return a grid between -pi/2 and pi/2
     std::map<std::string, std::vector<std::vector<double>>> EQ = GRID(-pi()/2, pi()/2);
+
+    // Return quadratic approximation equation
     std::map<std::string, std::vector<std::vector<double>>> QuantFinance = QUADRATIC(EQ, 1.0, 1.0);
 
+    // Plot the original equation and its quadratic approximation
     plt::surface3DMap(ax, EQ["x"], EQ["y"], EQ["z"], "jet", 1.0);
     plt::surface3D(ax, QuantFinance["x"], QuantFinance["y"], QuantFinance["z"], "red", 1.0);
 
