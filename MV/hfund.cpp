@@ -347,7 +347,9 @@ std::vector<double> HedgingRatio(std::vector<double> x, std::vector<double> y){
     return result;
 }
 
+// Computes Bayesian Normal Updates for returns to smooth the returns
 std::vector<double> Bayesian(std::vector<double> x, int window){
+    // Computes the mean of a given vector
     auto average = [](std::vector<double> xp){
         double total = 0;
         for(auto & i : xp){
@@ -355,6 +357,7 @@ std::vector<double> Bayesian(std::vector<double> x, int window){
         }
         return total / (double) xp.size();
     };
+    // Computes the variance of a given vector
     auto variance = [&](std::vector<double> xp){
         double total = 0, mu = average(xp);
         for(auto & i : xp){
@@ -363,10 +366,15 @@ std::vector<double> Bayesian(std::vector<double> x, int window){
         return total / ((double) xp.size() - 1);
     };
     std::vector<double> result, hold, init;
+    // Divides data based on window length
     init = {x.begin(), x.begin()+window};
     x = {x.begin()+window, x.end()};
+
+    // Compute the variance and mean of the init vector for formula
     double tau = variance(init);
     double mu = average(init);
+
+    // Capture a rolling window of returns and keep computing its sigma and updating its tau
     for(int i = window; i < x.size(); ++i){
         hold = {x.begin()+i-window, x.begin()+i};
         double sigma = variance(hold);
@@ -414,6 +422,8 @@ int main()
     int lookback = 100;
 
     std::vector<double> PortfolioReturns = MinVariancePortfolio(rorPort, lookback);
+
+    // Run the portfolio returns through the Bayesian function, all else is same
     PortfolioReturns = Bayesian(PortfolioReturns, lookback);
 
     auto min_p = std::min_element(PortfolioReturns.begin(), PortfolioReturns.end());
