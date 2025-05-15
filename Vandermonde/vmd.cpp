@@ -7,6 +7,7 @@
 
 namespace plt = matplotlibcpp;
 
+// Prints out 2D vector
 void PRINTX(std::vector<std::vector<double>> x){
     for(auto & row : x){
         for(auto & col : row){
@@ -16,6 +17,7 @@ void PRINTX(std::vector<std::vector<double>> x){
     }
 }
 
+// Matrix multiplication function
 std::vector<std::vector<double>> MMULT(std::vector<std::vector<double>> x, std::vector<std::vector<double>> y){
     std::vector<std::vector<double>> z;
     std::vector<double> t;
@@ -34,6 +36,7 @@ std::vector<std::vector<double>> MMULT(std::vector<std::vector<double>> x, std::
     return z;
 }
 
+// Inverse matrix function with Gaussian Elimination
 std::vector<std::vector<double>> INVERSE(std::vector<std::vector<double>> x){
     std::vector<std::vector<double>> I;
     std::vector<double> temp;
@@ -83,25 +86,31 @@ std::vector<std::vector<double>> INVERSE(std::vector<std::vector<double>> x){
 
 int main()
 {
+    // Generate 2D plot
     PyObject * ax = plt::chart2D(111);
 
+    // Define random points to interpolate
     std::vector<double> x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     std::vector<double> y = {5, 6, 3, 1, 2, 9, 1, 2, 5, 7};
 
     std::vector<std::vector<double>> X, Y;
     std::vector<double> temp;
 
+    // Generate Vandermonde matrix with n order, n = x.size() 
     for(int i = 0; i < x.size(); ++i){
         temp.clear();
         for(int j = 0; j < x.size(); ++j){
             temp.push_back(pow(x[i], j));
         }
+        // Build input matrix and output vector (which has the actual interpolated points)
         X.push_back(temp);
         Y.push_back({y[i]});
     }
 
+    // Compute the coeffecients using Linear Algebra
     std::vector<std::vector<double>> coef = MMULT(INVERSE(X), Y);
 
+    // Build the plotting lines
     std::vector<double> Fx, Fy;
     int steps = 50;
     double x0 = 1;
@@ -112,12 +121,14 @@ int main()
         double summation = 0;
         double uxp = x0 + i*dx;
         for(int j = 0; j < coef.size(); ++j){
+            // Take the summation of each coeffecient and its power
             summation += coef[j][0]*pow(uxp, j);
         }
         Fx.push_back(uxp);
         Fy.push_back(summation);
     }
 
+    // Plot the Vandermonde interpolation equation and the randomly selected points
     plt::scatter2D(ax, x, y, "red");
     plt::plot2D(ax, Fx, Fy, "blue");
 
