@@ -10,6 +10,7 @@
 
 namespace plt = matplotlibcpp;
 
+// Computes the premium leg present value
 double premium_leg(double notional, double cds, double dt, double r, int n){
     double pv = 0;
     for(int i = 0; i < n; ++i){
@@ -18,6 +19,7 @@ double premium_leg(double notional, double cds, double dt, double r, int n){
     return pv;
 }
 
+// Derivative of premium leg with respect to credit spread
 double dpremium_leg(double notional, double dt, double r, int n){
     double pv = 0;
     for(int i = 0; i < n; ++i){
@@ -26,6 +28,7 @@ double dpremium_leg(double notional, double dt, double r, int n){
     return pv;
 }
 
+// Present value of protection leg
 double protection_leg(double notional, double lgd, double r, std::vector<double> pb){
     double pv = 0;
     for(int i = 0; i < pb.size(); ++i){
@@ -34,6 +37,7 @@ double protection_leg(double notional, double lgd, double r, std::vector<double>
     return pv;
 }
 
+// Uses Newton-Ralphson's method to calculate optimal credit spread
 double calculate_cds(double notional, double lgd, double dt, double r, int n, std::vector<double> pb){
     double cds_0 = 0.01, cds_1 = 0.99;
     while(true){
@@ -46,6 +50,7 @@ double calculate_cds(double notional, double lgd, double dt, double r, int n, st
     return cds_1;
 }
 
+// Transposes a matrix
 std::vector<std::vector<double>> transpose(std::vector<std::vector<double>> x){
     std::vector<std::vector<double>> z;
     std::vector<double> temp;
@@ -59,6 +64,7 @@ std::vector<std::vector<double>> transpose(std::vector<std::vector<double>> x){
     return z;
 }
 
+// Reverses default rates
 std::vector<double> Reverse(std::vector<double> x){
     std::vector<double> res;
     double product = 1.0;
@@ -72,8 +78,13 @@ std::vector<double> Reverse(std::vector<double> x){
 
 int main()
 {
+    // Time increments
     std::vector<double> the_time = {30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0};
+
+    // Initial notional value
     double notional = 1000000;
+
+    // Initialize 3D chart
     PyObject * ax = plt::chart(111);
 
     for(auto & ts : the_time){
@@ -85,12 +96,14 @@ int main()
         std::vector<double> default_rates = {0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09};
         std::vector<double> recovery_rates = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
         std::reverse(recovery_rates.begin(), recovery_rates.end());
-        
+
+        // Cumulative return of default rates
         default_rates = Reverse(default_rates);
 
         std::vector<std::vector<double>> x, y, z;
         std::vector<double> temp;
-        
+
+        // X-Axis is recovery rates, Y-Axis is default rates
         for(int i = 0; i < default_rates.size(); ++i){
             x.push_back(recovery_rates);
             y.push_back(default_rates);
@@ -100,17 +113,21 @@ int main()
         for(int i = 0; i < x.size(); ++i){
             temp.clear();
             for(int j = 0; j < x[0].size(); ++j){
+                // LGD is the current recovery rate at point i, j
                 double lgd = x[i][j];
                 std::vector<double> pb = y[i];
+
+                // Calculate credit spread
                 double calculation = calculate_cds(notional, lgd, dt, rf, n, pb);
                 temp.push_back(calculation);   
             }
             z.push_back(temp);
         }
 
-        
+        // Set axis names
         plt::Chart3DAxesNames(ax, "LGD", "Probability", "CDS Spread");
 
+        // Plot animated 3D surface which varies as a new time is inputted
         plt::surface3DMap(ax, x, y, z, "jet", 1.0);
 
         plt::pause(1);
