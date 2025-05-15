@@ -14,6 +14,7 @@ namespace plt = matplotlibcpp;
 
 using namespace boost::property_tree;
 
+// Financial Modeling Prep API address
 std::string fmp_address(std::string ticker){
     std::string url = "https://financialmodelingprep.com";
     std::string key = "";
@@ -56,8 +57,11 @@ std::string Request(const std::string& url) {
     return readBuffer;
 }
 
+// Pulls stock data on an inputted ticker
 std::vector<double> PullStockData(std::string ticker){
     std::vector<double> close;
+
+    // Fetches stock price data and parses it as JSON using Boost
     std::string response = Request(fmp_address(ticker));
     std::stringstream ss(response);
     ptree dataset;
@@ -67,21 +71,27 @@ std::vector<double> PullStockData(std::string ticker){
             for(ptree::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt){
                 for(ptree::const_iterator kt = jt->second.begin(); kt != jt->second.end(); ++kt){
                     if(kt->first == "adjClose"){
+                        // Pulls adjusted close data into a single vector
                         close.push_back(kt->second.get_value<double>());
                     }
                 }
             }
         }
     }
+    // Get the oldest price first and newest price last
     std::reverse(close.begin(), close.end());
     return close;
 }
 
+// Fetches latest stock price
 double stockPrice(std::vector<double> close){
     return close[close.size() - 1];
 }
 
+// Generates parameters for SABR model with inuptted close prices
 std::map<std::string, double> Parameters(std::vector<double> close){
+
+    // Computes the average value of a given vector
     auto mean = [](std::vector<double> x){
         double average = 0;
         for(auto & i : x){
@@ -89,7 +99,8 @@ std::map<std::string, double> Parameters(std::vector<double> close){
         }
         return average / (double) x.size();
     };
-    
+
+    // Computes the standard deviation of a given vector
     auto stdev = [&](std::vector<double> x){
         double mu = mean(x);
         double volatility = 0;
@@ -98,24 +109,33 @@ std::map<std::string, double> Parameters(std::vector<double> close){
         }
         return pow(volatility / ((double) x.size() - 1), 0.5);
     };
+
+    // Calculates the rate of returns
     std::map<std::string, double> result;
     std::vector<double> ror;
     for(int i = 1; i < close.size(); ++i){
         ror.push_back(close[i]/close[i-1] - 1.0);
     }
+
+    // Calculates the volatilty of the entire returns vector
     double ivol = stdev(ror);
+
+    // Calculates the rolling volatility of the returns
     double window = 100;
     std::vector<double> store_vol;
     for(int i = window; i < ror.size(); ++i){
         std::vector<double> hold = {ror.begin()+i-window, ror.begin()+i};
         store_vol.push_back(stdev(hold));
     }
+
+    // Computes the volatility of the volatility
     double vvol = stdev(store_vol);
     result["iv"] = ivol;
     result["sv"] = vvol;
     return result;
 }
 
+// Generates 3D grid based on the Strike Price, Forward Price, and Time till Expiration
 std::map<std::string, std::vector<std::vector<double>>> GRID(std::vector<double> x, std::vector<double> y, std::vector<double> T){
     std::map<std::string, std::vector<std::vector<double>>> result;
     for(int i = 0; i < x.size(); ++i){
@@ -123,10 +143,12 @@ std::map<std::string, std::vector<std::vector<double>>> GRID(std::vector<double>
         std::vector<double> tempy;
         std::vector<double> tempz;
         for(int j = 0; j < y.size(); ++j){
+            // Build row grid
             tempx.push_back(x[i]);
             tempy.push_back(y[j]);
             tempz.push_back(T[j]);
         }
+        // Build matrix
         result["Strikes"].push_back(tempx);
         result["Forward"].push_back(tempy);
         result["Expiry"].push_back(tempz);
@@ -134,6 +156,7 @@ std::map<std::string, std::vector<std::vector<double>>> GRID(std::vector<double>
     return result;
 }
 
+// Calculates the implied volatility at each point
 double ImpliedVol(double iv, double vvol, double rho, double Ft, double K, double beta){
     double z = (vvol/iv)*pow(Ft*K, (1 - beta)/2.0)*log(Ft/K);
     double xz = log((pow(1 - 2.0*rho*z + pow(z, 2), 0.5) + z - rho)/(1 - rho));
@@ -141,6 +164,7 @@ double ImpliedVol(double iv, double vvol, double rho, double Ft, double K, doubl
     return (iv/pow(Ft*K, (1 - beta)/2.0))*(z/xz)*(1+adj);
 }
 
+// Computes the implied volatility surface based on the strike prices and forward prices and the beta (the beta defines curvature or linear)
 std::vector<std::vector<double>> VolSurface(std::map<std::string, std::vector<std::vector<double>>> xy, double iv, double vvol, double rho, double beta){
     std::vector<std::vector<double>> vs;
     std::vector<double> ts;
@@ -154,6 +178,7 @@ std::vector<std::vector<double>> VolSurface(std::map<std::string, std::vector<st
     return vs;
 }
 
+// Generaes a line of points between a and b for n size
 std::vector<double> linspace(double a, double b, int n){
     std::vector<double> result;
     double dx = (b - a)/(n - 1);
@@ -165,35 +190,44 @@ std::vector<double> linspace(double a, double b, int n){
 
 int main()
 {
+    // Declare stocks and 3D plots
     std::vector<std::string> tickers = {"MSFT","AAPL","AMZN","IBM","NVDA","GOOGL"};
     std::vector<PyObject*> bx;
     for(auto & num : {231, 232, 233, 234, 235, 236}){
         bx.push_back(plt::chart(num));
     }
 
+    // Define rho and risk-free rate
     double rho = -0.9;
     double r = 0.044;
 
     for(int k = 0; k < tickers.size(); ++k){
         std::string ticker = tickers[k];
         PyObject * ax = bx[k];
+
+        // Fetch stock price data and grab latest stock price
         std::vector<double> close = PullStockData(ticker);
         double S = stockPrice(close);
 
+        // Generate parameters
         std::map<std::string, double> VOL = Parameters(close);
 
+        // Calculate the forward prices off of time in the range of 7 days to 2 years
         std::vector<double> T = linspace(7/365.0, 2.0, 100);
         std::vector<double> Fr;
         for(int t = 0; t < T.size(); ++t){
             Fr.push_back(S*exp(r*T[t]));
         }
-        
+
+        // Set a range for strike prices
         std::vector<double> K = linspace(0.5*S, 1.5*S, 100);
-        
+
+        // Set a beta and return the Implied Volatility Surface stored in ZVol
         double beta = 0.3;
         std::map<std::string, std::vector<std::vector<double>>> grid = GRID(K, Fr, T);
         std::vector<std::vector<double>> ZVol = VolSurface(grid, VOL["iv"], VOL["sv"], rho, beta);
 
+        // Plot the Volatility surface for each stock in their respective 3D chart
         plt::PlotTitle(ax, ticker);
         plt::surface3DMap(ax, grid["Strikes"], grid["Expiry"], ZVol, "jet", 0.8);
         plt::Chart3DAxesNames(ax, "Strike Price", "Expiry", "Implied Volatility");
@@ -205,6 +239,9 @@ int main()
 }
 
 /* PART ONE
+
+This is the animated version where the beta is changed and the vol surface reacts to the change
+
 int main()
 {
     std::string ticker = "MSFT";
