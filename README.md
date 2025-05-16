@@ -103,9 +103,9 @@ In this program I generate a series of randomly selected points and I interpolat
 #### Preview
 ![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/Vandermonde/vmd.png)
 
-# =============================================
 
-# Original
+
+# Original Library
 
 matplotlib-cpp
 ==============
