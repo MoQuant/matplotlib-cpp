@@ -25,7 +25,7 @@ In this program I stream the level2 orderbook on Bitcoin from Coinbase Pro and I
 #### Preview
 ![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/BookViz/bookviz.png)
 
-### Credit Risk Visulaization
+### Credit Default Swap Spread Visulaization
 
 #### Description
 In this video I visualize credit spreads between fixed and floating legs and use Newton Ralphson's method to solve for the optimal spread between the two
