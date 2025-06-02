@@ -1,4 +1,4 @@
-# My Version
+# Project Extensions
 
 ## Description
 I forked this C++ plotting library and added a feature to animate 3D plots. The original version does not do this in an effecient way as each iteration of the 3D plot prints out a new figure. These are the projects I have done with this amazing library
