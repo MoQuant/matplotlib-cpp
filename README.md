@@ -58,51 +58,6 @@ In this program I calculate a MinVariance portfolio from several technology stoc
 #### Preview
 ![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/Hedge/hedge.png)
 
-### Quadratic Approximation
-
-#### Description
-In this program I use Quadratic Approximation to generate a quadratic equation approximating at a point in my sin wave curve. Quadratic Approximation serves well for approximating complex integrals in 3D space
-
-#### Video Link
-[YouTube Video](https://youtu.be/HoxokPLoPPU?feature=shared)
-
-#### Preview
-![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/Quadratic/quadratic.png)
-
-### Rotating a 3D Parabola
-
-#### Description
-In this program I use a 3D rotation matrix constructed with Sine and Cosine to rotate a 3D parabola on the x, y, and z axis
-
-#### Video Link
-[YouTube Video](https://youtu.be/aFeBN9nxWJ8?feature=shared)
-
-#### Preview
-![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/Rotate/rotate.png)
-
-### Stochastic Alpha, Beta, and Rho Model for Implied Volatility
-
-#### Description
-In this program I utilize the SABR model to generate an Implied Volatility surface for several stocks and I have an animation where the surface changes as different beta parameters are inputted into the equation
-
-#### Video Link
-[Part 1 YouTube Video](https://youtu.be/FtvYk54lmFo?feature=shared)
-[Part 2 YouTube Video](https://youtu.be/p8g1a1qt69g?feature=shared)
-
-#### Preview
-![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/SABRModel/sabr.png)
-
-### Vandermonde Interpolation
-
-#### Description
-In this program I generate a series of randomly selected points and I interpolate a curve which includes all of the points using Vandermonde Interpolation which requires constructing an nxn matrix and a nx1 vector with the outputs in order to generate the coeffecients
-
-#### Video Link
-[YouTube Video](https://youtu.be/2LA9afNp3y0?feature=shared)
-
-#### Preview
-![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/Vandermonde/vmd.png)
-
 
 
 # Original Library
