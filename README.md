@@ -36,16 +36,6 @@ In this video I visualize credit spreads between fixed and floating legs and use
 #### Preview
 ![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/CreditRisk/creditrisk.png)
 
-### Geometric Brownian Motion Distributions
-
-#### Description
-In this program I utilize Geometric Brownian Motion to generate a distribution plot between the historical stock price distribution and the forecasted GBM stock price distribution. I utilize threading to compute all of the distribution forecasts at the same time
-
-#### Video Link
-[YouTube Video](https://youtu.be/L13-RjbXMhs?feature=shared)
-
-#### Preview
-![alt](https://github.com/MoQuant/matplotlib-cpp/blob/master/Distribution/distribute.png)
 
 ### MinVariance Portfolio Hedger
 
